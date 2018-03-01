@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQ拖动排序</title>
+    <style>
+        * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        body, ul, li, a {
+            margin: 0;
+            padding: 0;
+        }
+
+        .sort {
+            position: fixed;
+            display: inline-block;
+            left: 50%;
+            top: 50px;
+            margin-left: 500px;
+            z-index: 100;
+        }
+
+        .sort .sort_lint {
+            background-color: #f6f9fa;
+            border: 1px solid #e5e9ef;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sort .sort_lint ul {
+            list-style: none;
+        }
+
+        .sort .sort_lint ul li {
+            display: block;
+            text-decoration: none;
+            cursor: pointer;
+            text-align: center;
+            color: #000;
+            font-size: 14px;
+            height: 32px;
+            line-height: 32px;
+            width: 48px;
+            transition: background-color 0.3s ease 0s, color 0.3s ease 0s;
+        }
+
+        .sort .sort_lint ul li.rank {
+            height: 60px;
+            line-height: 60px;
+            border-top: 1px solid #e5e9ef;
+        }
+
+        .sort .sort_lint ul li:hover,
+        .sort .sort_lint ul li.item.active {
+            background-color: #00a1d6;
+            color: #fff;
+        }
+
+        .sort-canopy {
+            background: rgba(0, 0, 0, 0.5) none repeat scroll 0 0;
+            height: 100%;
+            left: 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 99;
+            transition: display 0.3s;
+            display: none;
+        }
+
+        .ceshi {
+            position: fixed;
+        }
+
+        .block > div {
+            position: relative;
+            height: 300px;
+            border: 1px solid #000;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+<button class="btn">按钮</button>
+<!-- 拖动滚动 sort  -->
+<div class="sort">
+    <div class="sort_lint">
+        <ul>
+            <li data-row="1" class="active item">动画</li>
+            <li data-row="2" class="item">电影</li>
+            <li data-row="3" class="item">直播</li>
+            <li data-row="4" class="item">音乐</li>
+            <li data-row="5" class="item">舞蹈</li>
+            <li data-row="6" class="item">广1告</li>
+            <li data-row="7" class="item">科技</li>
+            <li data-row="8" class="item">生活</li>
+            <li class="rank">排序</li>
+        </ul>
+    </div>
+</div>
+<!-- 全屏黑幕 sort 调用 -->
+<div class="sort-canopy"></div>
+
+<div class="block">
+    <div data-row="1">
+        <div>动画</div>
+    </div>
+    <div data-row="2">
+        <div>电影</div>
+    </div>
+    <div data-row="3">
+        <div>直播</div>
+    </div>
+    <div data-row="4">
+        音乐
+    </div>
+    <div data-row="5">
+        舞蹈
+    </div>
+    <div data-row="6">
+        广告
+    </div>
+    <div data-row="7">
+        科技
+    </div>
+    <div data-row="8">
+        生活
+    </div>
+</div>
+
+
+<script src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
+<script>
+    $(function () {
+
+        (function ($) {
+
+            var sort = $('.sort');
+            var sortCanopy = $('.sort-canopy');   //拖动排序 遮罩层
+            var sortList = sort.find('.sort_lint ul li.item');
+
+            sortList.on('click', function () {
+                if (!sort.find('ul').hasClass('edit-state')) {
+                    $(this).addClass('active').siblings().removeClass('active');
+
+//                    $("html, body").animate({
+//                        scrollTop: $($(this).attr("href")).offset().top + "px"
+//                    }, 'fast', 'swing');
+                }
+            });
+
+            // 开启/关闭 排序
+            sort.find('.sort_lint ul li.rank').on('click', function () {
+                sort.find('ul').toggleClass('edit-state');
+                sortCanopy.fadeToggle(300);
+            });
+
+            //关闭 排序
+            sortCanopy.on('click', function () {
+                sort.find('ul').toggleClass('edit-state');
+                sortCanopy.fadeToggle(300);
+            });
+
+            // 移动排序
+            sort.find('.sort_lint').on('mousedown', '.edit-state li.item', function (e) {
+
+                var step = 0;
+
+                // 桌面端只允许鼠标左键拖动
+                if (e.type == 'mousedown' && e.which != 1) return;
+
+                // 防止表单元素，a 链接，可编辑元素失效
+                var tagName = e.target.tagName.toLowerCase();
+                if (tagName == 'input' || tagName == 'textarea' || tagName == 'select' ||
+                        tagName == 'a' || $(e.target).prop('contenteditable') == 'true') {
+                    return;
+                }
+
+
+                var $this = $(this);
+                var $doc = $(document);
+
+
+                var offset = $this.offset();
+
+                // 桌面端
+//                var pageX = e.pageX;
+                var pageY = e.pageY;
+
+//                var disX = pageX - offset.left;
+                var disY = pageY - offset.top;
+
+
+                var clone = $this.clone()
+                        .css({
+                            'height': $this.height(),
+                            'background-color': '#fff'
+                        })
+                        .empty();
+
+                var hasClone = 1;
+
+                // 缓存计算
+                var thisOuterHeight = $this.outerHeight();
+
+                $doc.on('mousemove', function (e) {
+                            // 桌面端
+//                            var pageX = e.pageX;
+                            var pageY = e.pageY;
+
+                            if (hasClone) {
+                                $this.before(clone)
+                                        .css({
+                                            'position': 'fixed',
+                                            'background-color': '#00a1d6',
+                                            'color': '#fff'
+                                        })
+                                        .appendTo($this.parent());
+
+                                hasClone = 0;
+                            }
+
+//                            var left = pageX - disX;
+                            var top = pageY - disY;
+
+                            var prev = clone.prev();
+                            var next = clone.next().not($this).not('.rank');
+
+                            // 超出首屏减去页面滚动条高度或宽度
+                            $this.css({
+//                                left: left - $doc.scrollLeft(),
+                                top: top - $doc.scrollTop()
+                            });
+
+                            // 向上排序
+                            if (prev.length && top < prev.offset().top + prev.outerHeight() / 2) {
+                                step = step - 1;
+
+                                clone.after(prev);
+
+                                // 向下排序
+                            } else if (next.length && top + thisOuterHeight > next.offset().top + next.outerHeight() / 2) {
+                                step = step + 1;
+                                clone.before(next);
+                            }
+
+                        })
+                        .on('mouseup', function () {
+
+                            $doc.off('mousemove mouseup');
+                            console.log("!11");
+                            // click 的时候也会触发 mouseup 事件，加上判断阻止这种情况
+                            if (!hasClone) {
+                                clone.before($this.removeAttr('style')).remove();
+
+                                $this.addClass('active').siblings().removeClass('active');
+
+                                var thisRow = $this.data('row');
+                                var thisIndex = $this.index();
+
+                                var $area = $('.block');
+                                var $areaRow = $area.find('div[data-row = ' + thisRow + ']');
+
+                                $area.append($areaRow);
+                                $area.children('div').eq(thisIndex).before($areaRow);
+
+                                var areaOffset = $areaRow.offset().top -100;
+                                $('html ,body').animate({scrollTop: areaOffset + 100}, 500);
+
+                            }
+                        });
+
+                return false;
+            });
+
+
+        })(jQuery);
+
+        $('.btn').on('click', function () {
+
+
+        });
+
+    });
+</script>
+</body>
+</html>

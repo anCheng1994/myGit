@@ -1,0 +1,72 @@
+.sort {
+    position: fixed;
+    display: inline-block;
+    left: 50%;
+    top: 281px;
+    /*top: 1px;*/
+    margin-left: 590px;
+    z-index: 100;
+    transition: top 0.3s ease 0s;
+}
+
+.sort .sort_lint {
+    background-color: #f6f9fa;
+    border: 1px solid #e5e9ef;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.sort .sort_lint ul {
+    list-style: none;
+}
+
+.sort .sort_lint ul li {
+    display: block;
+    text-decoration: none;
+    cursor: pointer;
+    text-align: center;
+    color: #000;
+    font-size: 14px;
+    height: 32px;
+    line-height: 32px;
+    width: 48px;
+    transition: background-color 0.3s ease 0s, color 0.3s ease 0s;
+}
+
+.sort .sort_lint ul li.rank {
+    height: 60px;
+    border-top: 1px solid #e5e9ef;
+    -moz-user-select: none;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease 0s, color 0.3s ease 0s;
+    width: 48px;
+}
+
+.sort .sort_lint ul li.rank .icon {
+    background-image: url("//static.hdslb.com/images/base/icons.png");
+    background-position: -663px -151px;
+    display: block;
+    height: 18px;
+    margin: 10px auto 0;
+    width: 18px;
+}
+
+.sort .sort_lint ul li:hover,
+.sort .sort_lint ul li.item.active {
+    background-color: #00a1d6;
+    color: #fff;
+}
+
+.sort-canopy {
+    background: rgba(0, 0, 0, 0.5) none repeat scroll 0 0;
+    height: 100%;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 99;
+    transition: display 0.3s;
+    display: none;
+}
